@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genesis Web - H&H Team</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Arial", sans-serif;
+        background-color: #f8f9fa;
+        color: #202124;
+      }
+
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 30px;
+      }
+
+      .hero-content {
+        max-width: 640px;
+        width: 100%;
+      }
+
+      .hero-content h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #1a0dab;
+      }
+
+      .hero-content p {
+        margin-bottom: 2rem;
+      }
+
+      .hero-content form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .hero-content input,
+      .hero-content button {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 1rem;
+        border-radius: 24px;
+        border: 1px solid #dfe1e5;
+        transition: box-shadow 0.3s ease;
+      }
+
+      .hero-content input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.5);
+      }
+
+      .hero-content button {
+        background-color: #1a0dab;
+        color: white;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.2s;
+      }
+
+      .hero-content button:hover {
+        background-color: #d93025;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .result {
+        border-bottom: 1px solid #dfe1e5;
+        padding: 12px 0;
+      }
+
+      .result:last-child {
+        border-bottom: none;
+      }
+
+      .title a {
+        color: #1a0dab;
+        text-decoration: none;
+        font-size: 20px;
+      }
+
+      .title a:hover {
+        text-decoration: underline;
+      }
+
+      .url {
+        color: #202124;
+        font-size: 12px;
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
+      }
+
+      .description {
+        color: #4d5156;
+        font-size: 16px;
+      }
+
+      @media (max-width: 768px) {
+        .hero-content h1 {
+          font-size: 2rem;
+        }
+
+        .hero-content p,
+        .hero-content form {
+          width: 100%;
+        }
+      }
+      #countdown {
+        font-size: 20px;
+        color: #ff0000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="home" class="hero">
+      <div class="hero-content">
+        <h1>Genesis Web - H&H Team</h1>
+        <p>
+          Merci d'être venu sur ce site. Nous sommes deux étudiants de première
+          du lycée Gustave Flaubert Hedi Fourati et Hedi Fourati (mêmes noms et
+          prenoms) et nous avons eu l'ambition de recréer Google. Bonne visite !
+        </p>
+        <button type="button" onclick="window.location.href = '#oursearch';">
+          Rechercher sur nos donnees
+        </button>
+        <button type="button" onclick="window.location.href = '#yoursearch';">
+          Tester le crawler
+        </button>
+      </div>
+    </div>
+    <section class="hero" id="oursearch">
+      <div class="hero-content">
+        <h2>Recherchez sur nos donnees</h2>
+        <a href="#home">Accueil</a>
+        <p>Entrez un mot-clé pour rechercher un site internet.</p>
+        <form id="keyword-form">
+          <input id="key" name="key" type="text" placeholder="Trophée NSI " />
+          <button type="submit">Envoyer</button>
+        </form>
+        <div class="container" id="results"></div>
+      </div>
+    </section>
+    <section class="hero" id="yoursearch">
+      <div class="hero-content">
+        <h2>Tester le crawler</h2>
+        <a href="#home">Accueil</a>
+        <p>Entrez le lien d'un site internet</p>
+        <i
+          >Le crawler navigera sur ce site internet et tout les sites aux
+          alentours durant 30secondes pour vous montrer comment ca fonctionne.
+          Un crawler navigue normalement a l'infini pour decouvrir toutes les
+          pages en temps reel, nous avons limiter ici a titre d'exemple.</i
+        >
+        <form id="crawler-form">
+          <input
+            id="url"
+            name="url"
+            type="text"
+            placeholder="www.exemple.com"
+          />
+          <button type="button" onclick="testerCrawler()">Tester</button>
+        </form>
+        <div id="countdown" style="display: none">25</div>
+        <div class="container" id="results-crawlers"></div>
+
+        <form id="indexation-crawler-form">
+          <input
+            id="crawler-key"
+            name="crawler-key"
+            type="text"
+            placeholder="Trophée NSI"
+          />
+          <button type="button" onclick="testerCrawlerKeywords()">
+            Envoyer
+          </button>
+        </form>
+        <div class="container" id="index-crawler-results"></div>
+      </div>
+    </section>
+    <script>
+      // Admin
+
+      // Fetch
+      document
+        .getElementById("keyword-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          var formData = new FormData(this);
+
+          fetch("/keywording", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              displayResults(data);
+            })
+            .catch((error) => {
+              console.error("Erreur:", error);
+            });
+        });
+
+      // Display
+      function displayResults(data) {
+        var container = document.getElementById("results");
+        container.innerHTML = "";
+        data.forEach((item) => {
+          var resultDiv = document.createElement("div");
+          resultDiv.classList.add("result");
+          resultDiv.innerHTML = `
+                    <a href="${item.url}" target="_blank">
+                    <div class="title">${item.title}</div>
+                    <div class="description">${item.description}</div>
+                    <div class="url">${item.url}</div>
+                    </a>
+                `;
+          container.appendChild(resultDiv);
+        });
+      }
+
+      // Client Part
+
+      // Crawler
+      document
+        .getElementById("crawler-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Empêche la soumission standard du formulaire
+          testerCrawler();
+        });
+
+        function testerCrawler() {
+    // Afficher le compte à rebours
+    var countdownElement = document.getElementById("countdown");
+    countdownElement.style.display = "block";
+    var timeLeft = 25; // Durée du compte à rebours en secondes
+
+    // Démarre le compte à rebours
+    var countdownTimer = setInterval(function() {
+        timeLeft--;
+        countdownElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownTimer);
+            countdownElement.style.display = "none"; // Cacher le compte à rebours à la fin
+        }
+    }, 1000); // Mettre à jour chaque seconde
+
+    // Effectuer l'appel fetch immédiatement, en parallèle avec le compte à rebours
+    var formData = new FormData(document.getElementById("crawler-form"));
+    fetch("/crawler", {
+        method: "POST",
+        body: formData,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log("Résultats", data);
+        // Attendre la fin du compte à rebours pour afficher les résultats
+        var resultDisplayCheck = setInterval(function() {
+            if (timeLeft <= 0) {
+                clearInterval(resultDisplayCheck); // Arrête la vérification
+                displayCrawlerResults(data.data); // Affiche les résultats après le compte à rebours
+            }
+        }, 1000);
+    })
+    .catch((error) => {
+        console.error("Erreur:", error);
+    });
+}
+
+
+      function displayCrawlerResults(data) {
+        var container = document.getElementById("results-crawlers");
+        container.innerHTML = "";
+
+        var table = document.createElement("table");
+        table.style.width = "100%";
+        table.setAttribute("border", "1");
+
+        var thead = document.createElement("thead");
+        var headerRow = document.createElement("tr");
+        ["Mot-clé", "Données"].forEach((headerText) => {
+          var headerCell = document.createElement("th");
+          headerCell.textContent = headerText;
+          headerRow.appendChild(headerCell);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        var tbody = document.createElement("tbody");
+        data.forEach((rowData) => {
+          var row = document.createElement("tr");
+          rowData.forEach((cellData) => {
+            var cell = document.createElement("td");
+            cell.textContent = cellData;
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+
+        container.appendChild(table);
+      }
+
+      // Keywords
+
+      document
+        .getElementById("indexation-crawler-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Empêche la soumission standard du formulaire
+          testerCrawlerKeywords();
+        });
+
+      function testerCrawlerKeywords() {
+        var formData = new FormData(
+          document.getElementById("indexation-crawler-form")
+        );
+        fetch("/keywordingClient", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Result", data);
+            displayCrawlerKeywordsResults(data);
+          })
+          .catch((error) => {
+            console.error("Erreur:", error);
+          });
+      }
+
+      function displayCrawlerKeywordsResults(data) {
+        console.log(data);
+        var container = document.getElementById("index-crawler-results");
+        container.innerHTML = "";
+        data.forEach((item) => {
+          var resultDiv = document.createElement("div");
+          resultDiv.classList.add("result");
+          resultDiv.innerHTML = `
+            <a href="${item.url}" target="_blank">
+            <div class="title">${item.title}</div>
+            <div class="description">${item.description}</div>
+            <div class="url">${item.url}</div>
+            </a>
+        `;
+          container.appendChild(resultDiv);
+        });
+      }
+    </script>
+  </body>
+</html>
